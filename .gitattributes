@@ -1,0 +1,2 @@
+/panelium filter=lfs diff=lfs merge=lfs -text
+/install.sh -text
