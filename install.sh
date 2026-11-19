@@ -100,7 +100,8 @@ install_panelium()
         esac
         shift
     done
-    "$installer_binary" install
+    # Keep Ubuntu's APT hook from restarting unrelated services during offline install.
+    NEEDRESTART_SUSPEND=1 "$installer_binary" install
     if ! $skip_setup; then
         if $skip_telegram; then
             /usr/local/bin/Panelium setup --skip-telegram
