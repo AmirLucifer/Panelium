@@ -101,14 +101,16 @@ install_panelium()
         shift
     done
     # Keep Ubuntu's APT hook from restarting unrelated services during offline install.
-    NEEDRESTART_SUSPEND=1 "$installer_binary" install
+    NEEDRESTART_SUSPEND=1 "$installer_binary" install || return $?
     if ! $skip_setup; then
         if $skip_telegram; then
-            /usr/local/bin/Panelium setup --skip-telegram
+            /usr/local/bin/Panelium setup --skip-telegram || return $?
         else
-            /usr/local/bin/Panelium setup
+            /usr/local/bin/Panelium setup || return $?
         fi
-        /usr/local/bin/Panelium enable
+        printf '%s\n' 'Starting Panelium services...'
+        /usr/local/bin/Panelium enable || return $?
+        printf '%s\n' 'Panelium is ready.'
     fi
 }
 
@@ -181,7 +183,7 @@ EOF
         printf 'Selection: '
         IFS= read -r selection
         case "$selection" in
-            1) install_panelium ;;
+            1) install_panelium || printf '%s\n' 'Installation did not complete. Review the error before retrying.' >&2 ;;
             2) setup_panelium ;;
             3) require_root; "$(runtime_binary)" enable ;;
             4) require_root; "$(runtime_binary)" disable ;;
