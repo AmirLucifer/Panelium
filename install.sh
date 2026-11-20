@@ -83,6 +83,8 @@ Commands:
       Validate and transactionally restore a PostgreSQL custom archive.
   remove [--yes]
       Remove Panelium after preserving a PostgreSQL backup under /root.
+  tls [status|issue <v2ray|sstp> <hostname>]
+      Inspect TLS configuration, or issue or renew a VPN core certificate.
   menu         Open the interactive 3x-ui-style management menu.
 EOF
 }
@@ -159,6 +161,48 @@ restore_panelium()
     esac
 }
 
+manage_tls()
+{
+    require_root
+    case "${1:-menu}" in
+        status)
+            runuser -u postgres -- psql -XAt -d panelium -c \
+                "SELECT format('Panel HTTPS: %s | Host: %s | TLS port: %s | Certificate: %s', https_enabled, public_hostname, https_port, certificate_path) FROM panelium.panel_settings WHERE singleton" || return $?
+            certbot certificates --non-interactive || return $?
+            systemctl list-timers --all certbot.timer
+            ;;
+        issue)
+            if [ "$#" -ne 3 ]; then
+                printf '%s\n' 'Usage: ./install.sh tls issue <v2ray|sstp> <hostname>' >&2
+                return 2
+            fi
+            /opt/panelium/bin/panelium-issue-core-cert --protocol "$2" --hostname "$3"
+            ;;
+        menu)
+            while :; do
+                printf '\n%s\n' 'TLS certificates' '1. Certificate status and renewal schedule' \
+                    '2. Issue or renew a VPN core certificate' '3. Configure panel HTTPS' '0. Back'
+                printf 'TLS selection: '
+                IFS= read -r selection || return 0
+                case "$selection" in
+                    1) manage_tls status || printf '%s\n' 'Certificate status could not be read.' >&2 ;;
+                    2)
+                        printf 'Core (v2ray/sstp): '
+                        IFS= read -r protocol || return 0
+                        printf 'Certificate hostname: '
+                        IFS= read -r hostname || return 0
+                        manage_tls issue "$protocol" "$hostname" || printf '%s\n' 'Certificate issuance did not complete.' >&2
+                        ;;
+                    3) setup_panelium || printf '%s\n' 'Panel HTTPS setup did not complete.' >&2 ;;
+                    0) return 0 ;;
+                    *) printf '%s\n' 'Invalid TLS selection.' >&2 ;;
+                esac
+            done
+            ;;
+        *) printf '%s\n' 'Use tls, tls status or tls issue.' >&2; return 2 ;;
+    esac
+}
+
 show_menu()
 {
     while :; do
@@ -177,6 +221,7 @@ show_menu()
 ║  8. Backup database                  ║
 ║  9. Restore database                 ║
 ║ 10. Remove                           ║
+║ 11. TLS certificates                 ║
 ║  0. Exit                             ║
 ╚══════════════════════════════════════╝
 EOF
@@ -197,6 +242,7 @@ EOF
                 restore_panelium "$archive"
                 ;;
             10) remove_panelium ;;
+            11) manage_tls ;;
             0) exit 0 ;;
             *) printf '%s\n' 'Invalid selection.' >&2 ;;
         esac
@@ -228,6 +274,7 @@ case "$command" in
         ;;
     backup) backup_panelium "$@" ;;
     restore) restore_panelium "$@" ;;
+    tls) manage_tls "$@" ;;
     remove|uninstall) remove_panelium "$@" ;;
     menu) show_menu ;;
     -h|--help|help) usage ;;
