@@ -68,7 +68,9 @@ Commands:
   install [--skip-telegram] [--skip-setup]
       Install exclusively from the payload embedded in the adjacent binary.
   setup [--skip-telegram]
-      Configure Panel Settings, administrator credentials, and protocol cores.
+      Configure Panel Settings and administrator credentials.
+  reset-admin
+      Change the primary administrator username and password as root.
   enable       Enable and start the Panelium web service and gateway.
   disable      Stop and disable the Panelium web service and gateway.
   restart      Restart the Panelium web service and gateway.
@@ -124,6 +126,17 @@ setup_panelium()
         --skip-telegram) "$(runtime_binary)" setup --skip-telegram ;;
         *) printf '%s\n' "Unknown setup option: $1" >&2; exit 2 ;;
     esac
+}
+
+reset_admin()
+{
+    require_root
+    if [ "$#" -ne 0 ]; then
+        printf '%s\n' 'Usage: ./panelium-install.sh reset-admin' >&2
+        return 2
+    fi
+    # The adjacent binary also supports recovering an older Panelium installation.
+    "$installer_binary" reset-admin
 }
 
 remove_panelium()
@@ -209,7 +222,7 @@ show_menu()
         cat <<'EOF'
 
 ╔══════════════════════════════════════╗
-║     Panelium All-In-One VPN Panel    ║
+║          Panelium AIO VPN PANEL      ║
 ╠══════════════════════════════════════╣
 ║  1. Install                          ║
 ║  2. Setup / reconfigure              ║
@@ -222,6 +235,7 @@ show_menu()
 ║  9. Restore database                 ║
 ║ 10. Remove                           ║
 ║ 11. TLS certificates                 ║
+║ 12. Change administrator login       ║
 ║  0. Exit                             ║
 ╚══════════════════════════════════════╝
 EOF
@@ -243,6 +257,7 @@ EOF
                 ;;
             10) remove_panelium ;;
             11) manage_tls ;;
+            12) reset_admin || printf '%s\n' 'Administrator login was not changed.' >&2 ;;
             0) exit 0 ;;
             *) printf '%s\n' 'Invalid selection.' >&2 ;;
         esac
@@ -256,6 +271,7 @@ fi
 case "$command" in
     install) install_panelium "$@" ;;
     setup) setup_panelium "$@" ;;
+    reset-admin) reset_admin "$@" ;;
     enable) require_root; "$(runtime_binary)" enable ;;
     disable) require_root; "$(runtime_binary)" disable ;;
     restart) require_root; "$(runtime_binary)" restart ;;
