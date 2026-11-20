@@ -85,8 +85,8 @@ Commands:
       Validate and transactionally restore a PostgreSQL custom archive.
   remove [--yes]
       Remove Panelium after preserving a PostgreSQL backup under /root.
-  tls [status|issue <v2ray|sstp> <hostname>]
-      Inspect TLS configuration, or issue or renew a VPN core certificate.
+  tls [manage|cloudflare|letsencrypt|self-signed|status|issue <v2ray|sstp> <hostname>]
+      Manage or issue web certificates, or issue or renew a VPN core certificate.
   menu         Open the interactive 3x-ui-style management menu.
 EOF
 }
@@ -193,26 +193,35 @@ manage_tls()
             ;;
         menu)
             while :; do
-                printf '\n%s\n' 'TLS certificates' '1. Certificate status and renewal schedule' \
-                    '2. Issue or renew a VPN core certificate' '3. Configure panel HTTPS' '0. Back'
+                printf '\n%s\n' 'TLS certificates' '1. Manage web certificates' \
+                    '2. Issue Cloudflare Origin CA certificate' "3. Issue Let's Encrypt certificate" \
+                    '4. Create self-signed certificate' '5. Certificate status and renewal schedule' \
+                    '6. Issue or renew a VPN core certificate' '0. Back'
                 printf 'TLS selection: '
                 IFS= read -r selection || return 0
                 case "$selection" in
-                    1) manage_tls status || printf '%s\n' 'Certificate status could not be read.' >&2 ;;
-                    2)
+                    1) manage_tls manage || printf '%s\n' 'Certificate management failed.' >&2 ;;
+                    2) manage_tls cloudflare || printf '%s\n' 'Certificate issuance failed.' >&2 ;;
+                    3) manage_tls letsencrypt || printf '%s\n' 'Certificate issuance failed.' >&2 ;;
+                    4) manage_tls self-signed || printf '%s\n' 'Certificate generation failed.' >&2 ;;
+                    5) manage_tls status || printf '%s\n' 'Certificate status could not be read.' >&2 ;;
+                    6)
                         printf 'Core (v2ray/sstp): '
                         IFS= read -r protocol || return 0
                         printf 'Certificate hostname: '
                         IFS= read -r hostname || return 0
                         manage_tls issue "$protocol" "$hostname" || printf '%s\n' 'Certificate issuance did not complete.' >&2
                         ;;
-                    3) setup_panelium || printf '%s\n' 'Panel HTTPS setup did not complete.' >&2 ;;
                     0) return 0 ;;
                     *) printf '%s\n' 'Invalid TLS selection.' >&2 ;;
                 esac
             done
             ;;
-        *) printf '%s\n' 'Use tls, tls status or tls issue.' >&2; return 2 ;;
+        manage|cloudflare|letsencrypt|self-signed)
+            [ "$#" -eq 1 ] || return 2
+            /opt/panelium/bin/panelium-web-tls "$1"
+            ;;
+        *) printf '%s\n' 'Use tls manage, cloudflare, letsencrypt, self-signed, status or issue.' >&2; return 2 ;;
     esac
 }
 
