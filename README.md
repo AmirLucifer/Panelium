@@ -1,22 +1,19 @@
 # Panelium
 
-Panelium All-In-One VPN Panel release artifacts.
+Panelium is an all-in-one VPN administration panel for OpenVPN, WireGuard, V2Ray/Xray, L2TP/IPsec, and SSTP.
 
-## Download
-
-Current installer for Ubuntu 26.04 amd64: **v0.1.0-rc.20261121.1**
-
-- [install.sh](https://github.com/AmirLucifer/Panelium/releases/download/v0.1.0-rc.20261121.1/install.sh)
-- [panelium](https://github.com/AmirLucifer/Panelium/releases/download/v0.1.0-rc.20261121.1/panelium)
-- [Release notes](https://github.com/AmirLucifer/Panelium/releases/tag/v0.1.0-rc.20261121.1)
-
-Save both files in the same directory on the server, then run:
+## Install on Ubuntu 26.04 amd64
 
 ```sh
-chmod +x install.sh panelium
-sudo ./install.sh
+mkdir -p panelium-install
+cd panelium-install
+base=https://github.com/AmirLucifer/Panelium/releases/download/v0.1.0
+curl -fL --retry 3 -O "$base/panelium" -O "$base/install.sh" -O "$base/SHA256SUMS"
+sha256sum -c SHA256SUMS && chmod +x panelium install.sh && sudo ./install.sh install
 ```
 
-Choose **1** in the installer menu. The binary includes the offline installation payload.
+For an offline server, run the download commands on a connected machine and copy `panelium`, `install.sh`, and `SHA256SUMS` to the same directory on the server. From that directory, run the checksum and install commands above.
 
-The repository also tracks the binary using Git LFS. If you clone the repository, run `git lfs pull` if your checkout shows a small pointer. The download links above provide the actual files directly.
+The repository also tracks the binary using Git LFS. The release downloads provide the executable directly.
+
+[Panelium v0.1.0 release](https://github.com/AmirLucifer/Panelium/releases/tag/v0.1.0)
