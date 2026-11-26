@@ -7,7 +7,7 @@ Panelium is an all-in-one VPN administration panel for OpenVPN, WireGuard, V2Ray
 ```sh
 mkdir -p panelium-install
 cd panelium-install
-base=https://github.com/AmirLucifer/Panelium/releases/download/v0.1.0
+base=https://github.com/AmirLucifer/Panelium/releases/download/v1.0.0
 curl -fL --retry 3 -O "$base/panelium" -O "$base/install.sh" -O "$base/SHA256SUMS"
 sha256sum -c SHA256SUMS && chmod +x panelium install.sh && sudo ./install.sh install
 ```
@@ -16,4 +16,4 @@ For an offline server, run the download commands on a connected machine and copy
 
 The repository also tracks the binary using Git LFS. The release downloads provide the executable directly.
 
-[Panelium v0.1.0 release](https://github.com/AmirLucifer/Panelium/releases/tag/v0.1.0)
+[Panelium v1.0.0 release](https://github.com/AmirLucifer/Panelium/releases/tag/v1.0.0)
