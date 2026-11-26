@@ -5,7 +5,7 @@ Panelium is an all-in-one VPN administration panel for OpenVPN, WireGuard, V2Ray
 ## Install on Ubuntu 26.04 amd64
 
 ```sh
-curl -fL --retry 3 -O https://github.com/AmirLucifer/Panelium/releases/download/v1.0.0/install.sh -O https://github.com/AmirLucifer/Panelium/releases/download/v1.0.0/panelium && chmod +x install.sh panelium && sudo ./install.sh install
+curl -fL --retry 3 -O https://github.com/AmirLucifer/Panelium/releases/download/v1.0.0/install.sh -O https://github.com/AmirLucifer/Panelium/releases/download/v1.0.0/panelium && chmod +x install.sh panelium && sudo bash install.sh
 ```
 
 For offline installation, download `install.sh` and `panelium` on a connected machine and copy them to the same directory on the server. From that directory, run `chmod +x install.sh panelium && sudo ./install.sh install`.
